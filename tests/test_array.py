@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from pyCRGI import array, jited
+from pyCRGI import array, cuda, jited
 
 
 ITERATIONS = 10_000
@@ -73,6 +73,19 @@ def test_array_years(itype):
         itype = itype,
     )
 
+    years = random.uniform(low = 1900.0, high = 2030.0, size = ITERATIONS).astype('f8')
+    lats = random.uniform(low = -90.0, high = 90.0, size = ITERATIONS).astype('f8')
+    lons = random.uniform(low = 0.0, high = 360.0, size = ITERATIONS).astype('f8')
+    alts = random.uniform(low = -100.0, high = 400.0, size = ITERATIONS).astype('f8') + offset
+
+    cuda_results = cuda.get_syn(
+        years = years,
+        lats = lats,
+        elongs = lons,
+        alts = alts,
+        itype = itype,
+    )
+
     years = [float(number) for number in years]
     lats = [float(number) for number in lats]
     lons = [float(number) for number in lons]
@@ -92,4 +105,8 @@ def test_array_years(itype):
     assert np.allclose(
         np.array(jited_results, dtype = 'f8'),
         array_results,
+    )
+    assert np.allclose(
+        np.array(jited_results, dtype = 'f8'),
+        cuda_results,
     )
