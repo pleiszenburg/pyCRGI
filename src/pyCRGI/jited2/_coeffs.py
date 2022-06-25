@@ -73,7 +73,7 @@ def get_h_coeff(
     if mm == 0:
         return np.nan
 
-    temp = ll - 1
+    temp = ll
 
     if nn > 0:
         temp += nn ** 2
@@ -85,7 +85,7 @@ def get_h_coeff(
     if limit > 0:
         temp += 2 * (limit - 1) + 1
 
-    return tc * GH[temp + 1] + tt * GH[temp + nc + 1]
+    return tc * GH[temp] + tt * GH[temp + nc]
 
 
 @nb.njit('Tuple([i8,i8,f8,f8,i8])(i8)')
