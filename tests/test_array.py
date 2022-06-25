@@ -73,11 +73,6 @@ def test_array_years(itype):
         itype = itype,
     )
 
-    years = random.uniform(low = 1900.0, high = 2030.0, size = ITERATIONS).astype('f8')
-    lats = random.uniform(low = -90.0, high = 90.0, size = ITERATIONS).astype('f8')
-    lons = random.uniform(low = 0.0, high = 360.0, size = ITERATIONS).astype('f8')
-    alts = random.uniform(low = -100.0, high = 400.0, size = ITERATIONS).astype('f8') + offset
-
     cuda_results = cuda.get_syn(
         years = years,
         lats = lats,
