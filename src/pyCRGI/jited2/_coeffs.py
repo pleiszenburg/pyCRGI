@@ -31,10 +31,10 @@ def get_g_coeff(
     if nn == 0 and mm == 0:
         return np.nan
 
-    temp = ll - 1
+    temp = ll
 
-    if not (0 == nn and 1 == mm):
-        temp += 1
+    if 0 == nn and 1 == mm:
+        temp -= 1
 
     if nn > 1:
         temp += nn ** 2 - 1
