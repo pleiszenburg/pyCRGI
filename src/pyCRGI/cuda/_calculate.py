@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from math import sin, cos, sqrt, atan2, pi
-from typing import Optional, Union
+from typing import Optional
 
 from numba import cuda
 import numpy as np
@@ -197,7 +197,7 @@ def _get_syn(
 
 @typechecked
 def get_syn(
-    years: Union[float, np.ndarray], # f8 n
+    years: np.ndarray, # f8 n
     itype: int,
     alts: np.ndarray, # f8 n
     lats: np.ndarray, # f8 n
@@ -226,7 +226,7 @@ def get_syn(
     spreadsheet July 2005.
 
     Args:
-        years : year or years A.D. Must be greater than or equal to 1900.0 and
+        years : years A.D. Must be greater than or equal to 1900.0 and
             less than or equal to 2025.0. Warning message is given
             for dates greater than 2020.0. Must be double precision.
         itype : 1 if geodetic (spheroid), 2 if geocentric (sphere)
