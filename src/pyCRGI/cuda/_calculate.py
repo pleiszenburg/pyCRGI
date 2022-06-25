@@ -91,10 +91,18 @@ def _get_syn(
         xyzfs[idx, 3] = 1.0  # f
         return
 
-    p = np.zeros((105,), dtype = 'f8')
-    q = np.zeros((105,), dtype = 'f8')
-    cl = np.zeros((13,), dtype = 'f8')
-    sl = np.zeros((13,), dtype = 'f8')
+    p = cuda.local.array((105,), 'f8')
+    for jdx in range(p.shape[0]):
+        p[jdx] = 0
+    q = cuda.local.array((105,), 'f8')
+    for jdx in range(q.shape[0]):
+        q[jdx] = 0
+    cl = cuda.local.array((13,), 'f8')
+    for jdx in range(cl.shape[0]):
+        cl[jdx] = 0
+    sl = cuda.local.array((13,), 'f8')
+    for jdx in range(sl.shape[0]):
+        sl[jdx] = 0
 
     nmx, ll, tt, tc, nc = get_coeffs_prepare(year)
     kmx = (nmx + 1) * (nmx + 2) // 2 + 1
