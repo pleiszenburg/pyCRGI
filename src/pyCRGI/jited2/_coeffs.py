@@ -46,7 +46,7 @@ def get_g_coeff(
             limit = mm
 
         if limit > 0:
-            temp += 2 * (limit - 1) + 1
+            temp += 2 * limit - 1
 
     return tc * GH[temp] + tt * GH[temp + nc]
 
@@ -83,7 +83,7 @@ def get_h_coeff(
         limit = mm
 
     if limit > 0:
-        temp += 2 * (limit - 1) + 1
+        temp += 2 * limit - 1
 
     return tc * GH[temp] + tt * GH[temp + nc]
 
