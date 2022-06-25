@@ -16,6 +16,7 @@ from pyCRGI.pure import get_syn as pure_get_syn
 from pyCRGI.jited import get_syn as jited_get_syn
 from pyCRGI.jited2 import get_syn as jited2_get_syn
 from pyCRGI.array import get_syn as array_get_syn
+from pyCRGI.cuda import get_syn as cuda_get_syn
 
 
 FLD = os.path.dirname(__file__)
@@ -58,6 +59,7 @@ def _single_run(
 
 @typechecked
 def _array_run(
+    func: Callable,
     year: float,
     iterations: int,
     itype: int,
@@ -67,6 +69,7 @@ def _array_run(
 
     random = np.random.default_rng()
 
+    years = np.full((iterations,), fill_value = year, dtype = 'f8')
     lats = random.uniform(low = -90.0, high = 90.0, size = iterations).astype('f8')
     lons = random.uniform(low = 0.0, high = 360.0, size = iterations).astype('f8')
     alts = random.uniform(low = -100.0, high = 400.0, size = iterations).astype('f8') + offset
@@ -74,8 +77,8 @@ def _array_run(
     gc.disable()
     start = time_ns()
 
-    _ = array_get_syn(
-        years = year,
+    _ = func(
+        years = years,
         lats = lats,
         elongs = lons,
         alts = alts,
@@ -127,16 +130,20 @@ def main():
     ]
     iterations = [10 ** exp for exp in range(1, 7)]  # 8
     itypes = (1, 2)
-    funcs = (
-        ('pure', pure_get_syn),
-        ('jited', jited_get_syn),
-        ('jited2', jited2_get_syn),
-    )
-
     shades = [
         1 - 0.7 * idx / len(years)
         for idx in range(1, len(years) + 1)
-    ][::-1]
+    ]
+
+    scalar_funcs = (
+        ('pure',   pure_get_syn,   lambda x: [        1, shades[x], shades[x], 1] ,),
+        ('jited',  jited_get_syn,  lambda x: [shades[x],         1, shades[x], 1] ,),
+        ('jited2', jited2_get_syn, lambda x: [shades[x], shades[x],         1, 1] ,),
+    )
+    array_funcs = (
+        ('array',  array_get_syn,  lambda x: [shades[x],         1,         1, 1] ,),
+        ('cuda',   cuda_get_syn,   lambda x: [        1, shades[x],         1, 1] ,),
+    )
 
     FN = os.path.join(FLD, 'data.txt')
     if os.path.exists(FN):
@@ -144,21 +151,12 @@ def main():
 
     for (idx, year), itype, in tqdm(itertools.product(enumerate(years), itypes), total = len(years) * len(itypes)):
 
-        for name, get_syn in funcs:
+        for name, get_syn, color in scalar_funcs:
 
             durations = [
                 _single_run(get_syn = get_syn, year = year, iterations = iteration, itype = itype) / iteration
                 for iteration in iterations
             ]
-
-            if name == 'pure':
-                color = [1, shades[idx], shades[idx], 1]
-            elif name == 'jited':
-                color = [shades[idx], 1, shades[idx], 1]
-            elif name == 'jited2':
-                color = [shades[idx], shades[idx], shades[idx], 1]  # TODO
-            else:
-                raise ValueError('unknown name', name)
 
             _log(FN, {
                 'name': name,
@@ -166,22 +164,27 @@ def main():
                 'itype': itype,
                 'iterations': iterations,
                 'durations': durations,
-                'color': color,
+                'color': color(idx),
             })
 
-        durations = [
-            _array_run(year = year, iterations = iteration, itype = itype) / iteration
-            for iteration in iterations
-        ]
+        for name, get_syn, color in array_funcs:
 
-        _log(FN, {
-            'name': 'array',
-            'year': year,
-            'itype': itype,
-            'iterations': iterations,
-            'durations': durations,
-            'color': [shades[idx], shades[idx], 1, 1],
-        })
+            durations = [
+                _array_run(
+                    func = get_syn,
+                    year = year, iterations = iteration, itype = itype
+                ) / iteration
+                for iteration in iterations
+            ]
+
+            _log(FN, {
+                'name': name,
+                'year': year,
+                'itype': itype,
+                'iterations': iterations,
+                'durations': durations,
+                'color': color(idx),
+            })
 
 if __name__ == '__main__':
     main()
