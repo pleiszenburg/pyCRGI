@@ -18,7 +18,12 @@ def get_g_coeff(
     Processes coefficients
 
     Args:
-        year : Between 1900.0 and 2030.0
+        nn : Index i
+        mm : Index j
+        ll : int
+        tt : float
+        tc : float
+        nc : int
     Returns:
         g
     """
@@ -55,7 +60,12 @@ def get_h_coeff(
     Processes coefficients
 
     Args:
-        year : Between 1900.0 and 2030.0
+        nn : Index i
+        mm : Index j
+        ll : int
+        tt : float
+        tc : float
+        nc : int
     Returns:
         h
     """
