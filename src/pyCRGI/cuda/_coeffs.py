@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import numba as nb
+from numba import cuda
 import numpy as np
 
 from .._coeffs import GH
@@ -9,7 +9,7 @@ from .._coeffs import GH
 GH = np.array(GH, dtype = 'f8')
 
 
-@nb.njit('f8(i8,i8,i8,f8,f8,i8)')
+@cuda.jit('f8(i8,i8,i8,f8,f8,i8)', device = True)
 def get_g_coeff(
     nn, mm,
     ll, tt, tc, nc,
@@ -51,7 +51,7 @@ def get_g_coeff(
     return tc * GH[temp] + tt * GH[temp + nc]
 
 
-@nb.njit('f8(i8,i8,i8,f8,f8,i8)')
+@cuda.jit('f8(i8,i8,i8,f8,f8,i8)', device = True)
 def get_h_coeff(
     nn, mm,
     ll, tt, tc, nc,
@@ -88,7 +88,7 @@ def get_h_coeff(
     return tc * GH[temp] + tt * GH[temp + nc]
 
 
-@nb.njit('Tuple([i8,i8,f8,f8,i8])(i8)')
+@cuda.jit('Tuple([i8,i8,f8,f8,i8])(i8)', device = True)
 def get_coeffs_prepare(year):
     """
     Prepares to processes coefficients
