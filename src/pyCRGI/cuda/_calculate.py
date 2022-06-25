@@ -8,14 +8,14 @@ from ._coeffs import (
     get_coeffs_prepare,
 )
 
-import numba as nb
+from numba import cuda
 import numpy as np
 
 
 FACT = 180.0 / pi
 
 
-@nb.njit('f8[:](f8,f8)')
+@cuda.jit('Tuple([f8,f8,f8])(f8,f8)', device = True)
 def geodetic2geocentric(theta, alt):
     """
     Conversion from geodetic to geocentric coordinates by using the WGS84 spheroid.
@@ -44,11 +44,11 @@ def geodetic2geocentric(theta, alt):
     gccolat = atan2(st, ct)
     d = atan2(sd, cd)
 
-    return np.array([gccolat, d, r], dtype = 'f8')
+    return gccolat, d, r
 
 
-@nb.njit('f8[:](f8,i8,f8,f8,f8)')
-def get_syn(year, itype, alt, lat, elong): # TODO check 12th gen vs 13th gen synthesis routine
+@cuda.jit('f8[:](f8,i8,f8,f8,f8)')  # TODO
+def _get_syn(year, itype, alt, lat, elong): # TODO check 12th gen vs 13th gen synthesis routine
     """
     This is a synthesis routine for the 12th generation IGRF as agreed
     in December 2014 by IAGA Working Group V-MOD. It is valid 1900.0 to
