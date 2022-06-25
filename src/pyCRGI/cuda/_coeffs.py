@@ -9,10 +9,11 @@ from .._coeffs import GH
 GH = np.array(GH, dtype = 'f8')
 
 
-@cuda.jit('f8(i8,i8,i8,f8,f8,i8)', device = True)
+@cuda.jit('f8(i8,i8,i8,f8,f8,i8,f8[:])', device = True)
 def get_g_coeff(
     nn, mm,
     ll, tt, tc, nc,
+    gh,
 ):
     """
     Processes coefficients
@@ -24,6 +25,7 @@ def get_g_coeff(
         tt : float
         tc : float
         nc : int
+        gh : g and h
     Returns:
         g
     """
@@ -48,13 +50,14 @@ def get_g_coeff(
         if limit > 0:
             temp += 2 * limit - 1
 
-    return tc * GH[temp] + tt * GH[temp + nc]
+    return tc * gh[temp] + tt * gh[temp + nc]
 
 
-@cuda.jit('f8(i8,i8,i8,f8,f8,i8)', device = True)
+@cuda.jit('f8(i8,i8,i8,f8,f8,i8,f8[:])', device = True)
 def get_h_coeff(
     nn, mm,
     ll, tt, tc, nc,
+    gh,
 ):
     """
     Processes coefficients
@@ -66,6 +69,7 @@ def get_h_coeff(
         tt : float
         tc : float
         nc : int
+        gh : g and h
     Returns:
         h
     """
@@ -85,7 +89,7 @@ def get_h_coeff(
     if limit > 0:
         temp += 2 * limit - 1
 
-    return tc * GH[temp] + tt * GH[temp + nc]
+    return tc * gh[temp] + tt * gh[temp + nc]
 
 
 @cuda.jit('Tuple([i8,i8,f8,f8,i8])(i8)', device = True)
