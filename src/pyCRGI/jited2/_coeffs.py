@@ -33,7 +33,7 @@ def get_g_coeff(
 
     temp = ll
 
-    if 0 == nn and 1 == mm:
+    if nn == 0 and mm == 1:
         temp -= 1
 
     if nn > 1:
