@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from math import sin, cos, sqrt, atan2, pi
+from math import sin, cos, sqrt, atan2 as arctan2, pi
 from typing import Optional
 
 from numba import cuda
@@ -15,7 +15,7 @@ from ._coeffs import (
 )
 
 
-@cuda.jit('Tuple([f8,f8,f8])(f8,f8)', device = True)
+@cuda.jit('Tuple([f8,f8,f8])(f8,f8)', fastmath = False, device = True)
 def geodetic2geocentric(theta, alt):
     """
     Conversion from geodetic to geocentric coordinates by using the WGS84 spheroid.
@@ -41,13 +41,13 @@ def geodetic2geocentric(theta, alt):
     one = ct
     ct = ct * cd - st * sd
     st = st * cd + one * sd
-    gccolat = atan2(st, ct)
-    d = atan2(sd, cd)
+    gccolat = arctan2(st, ct)
+    d = arctan2(sd, cd)
 
     return gccolat, d, r
 
 
-@cuda.jit('void(f8[:],i8,f8[:],f8[:],f8[:],f8[:],f8[:,:])')
+@cuda.jit('void(f8[:],i8,f8[:],f8[:],f8[:],f8[:],f8[:,:])', fastmath = False)
 def _get_syn(
     years,
     itype,
@@ -92,16 +92,14 @@ def _get_syn(
         return
 
     p = cuda.local.array((105,), 'f8')
-    for jdx in range(p.shape[0]):
-        p[jdx] = 0
     q = cuda.local.array((105,), 'f8')
-    for jdx in range(q.shape[0]):
+    for jdx in range(105):
+        p[jdx] = 0
         q[jdx] = 0
     cl = cuda.local.array((13,), 'f8')
-    for jdx in range(cl.shape[0]):
-        cl[jdx] = 0
     sl = cuda.local.array((13,), 'f8')
-    for jdx in range(sl.shape[0]):
+    for jdx in range(13):
+        cl[jdx] = 0
         sl[jdx] = 0
 
     nmx, ll, tt, tc, nc = get_coeffs_prepare(year)
@@ -126,7 +124,7 @@ def _get_syn(
     n = 0
 
     if itype != 2:
-        gclat, gclon, r = geodetic2geocentric(atan2(st, ct), alt)
+        gclat, gclon, r = geodetic2geocentric(arctan2(st, ct), alt)
         ct, st = cos(gclat), sin(gclat)
         cd, sd = cos(gclon), sin(gclon)
     ratio = 6371.2 / r
