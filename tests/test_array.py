@@ -97,7 +97,7 @@ def test_array_years(itype):
         for year, lat, lon, alt in zip(years, lats, lons, alts)
     ]
 
-    # print(array_results[:10, :] - cuda_results[:10, :])
+    print(array_results[:10, :] - cuda_results[:10, :])
 
     assert np.allclose(
         np.array(jited_results, dtype = 'f8'),
@@ -107,7 +107,7 @@ def test_array_years(itype):
     assert np.allclose(
         np.array(jited_results, dtype = 'f8'),
         cuda_results,
-        rtol = 1e+01,  # TODO
-        atol = 1e+02,  # TODO
+        # rtol = 1e+01,  # TODO
+        # atol = 1e+02,  # TODO
         equal_nan = True,
     )
